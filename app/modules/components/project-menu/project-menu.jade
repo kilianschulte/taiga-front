@@ -57,7 +57,12 @@ nav.menu(
                       tg-nav="project-taskboard:project=vm.project.get('slug'),sprint=sprint.get('slug')"
                   ) {{::sprint.get('name')}}
 
-            li#nav-kanban(ng-if="vm.menu.get('kanban')")
+            li#nav-kanban(
+                ng-if="vm.menu.get('kanban')"
+                ng-mouseover="kanbanHover = true"
+                ng-mouseleave="kanbanHover = false"
+                ng-init="kanbanHover = false"
+            )
                 a(
                     tg-nav="project-kanban:project=vm.project.get('slug')"
                     ng-class="{active: vm.active == 'kanban'}"
@@ -65,7 +70,16 @@ nav.menu(
                     tabindex="3"
                 )
                     tg-svg(svg-icon="icon-kanban")
-                    span.helper(translate="PROJECT.SECTION.KANBAN")
+                    //- span.helper(translate="PROJECT.SECTION.KANBAN")
+                span.backlog-sprints-menu(ng-show="kanbanHover")
+                  span(translate="PROJECT.SECTION.KANBAN")
+                  a(
+                      tg-repeat="sprint in vm.project.get('milestones') track by sprint.get('id')"
+                      ng-if="!sprint.get('closed')"
+                      tg-nav="project-kanban-sprint:project=vm.project.get('slug'),sprint=sprint.get('id')"
+                  ) {{::sprint.get('name')}}
+
+                  //- tg-nav-get-params="{ \"sprint\": \"{{ sprint.get('slug')}}\" }"
 
             li#nav-issues(ng-if="vm.menu.get('issues')")
                 a(
