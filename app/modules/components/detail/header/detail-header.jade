@@ -35,14 +35,19 @@
                 svg-icon="icon-save"
             )
 
-//- User Story belongs to epic
-.belong-to-epics-wrapper(ng-if="vm.item.epics")
+//- User Story belongs to epic / sprint
+.belong-to-epics-wrapper(ng-if="vm.item.epics||vm.item.milestone")
     span(translate="US.OWNER_US")
     tg-belong-to-epics(
         ng-if="::vm.item.epics"
         epics="::vm.item.epics"
         format="text"
     )
+    tg-belong-to-sprint(
+      ng-if="::vm.item.milestone"
+      sprint="::{project: vm.item.project_extra_info.slug, name: vm.item.milestone_name, slug: vm.item.milestone_slug}"
+    )
+
 
 //- Task belongs to US
 .task-belongs-to(

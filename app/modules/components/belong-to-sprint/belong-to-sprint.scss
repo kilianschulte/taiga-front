@@ -1,0 +1,16 @@
+.belong-to-sprint-text-wrapper {
+    margin-right: 1rem;
+}
+
+.belong-to-sprint-text {
+    white-space: nowrap;
+}
+.belong-to-sprint-label {
+    @include font-type(light);
+    @include font-size(xsmall);
+    background: $grayer;
+    border-radius: .25rem;
+    color: $white;
+    margin: 0 .5rem;
+    padding: .1rem .25rem;
+}
