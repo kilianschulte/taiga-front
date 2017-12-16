@@ -30,7 +30,11 @@ div.wrapper(
                 .zoom-loading(tg-loading="ctrl.zoomLoading")
                 tg-taskboard-zoom(
                     on-zoom-change="ctrl.setZoom(zoomLevel, zoom)"
-                )
+                    )
+                button.button-hide-empty(
+                  ng-click="ctrl.hideEmptyUS = !ctrl.hideEmptyUS",
+                  ng-class="{'active': ctrl.hideEmptyUS}"
+                ) {{'TASKBOARD.HIDE_EMPTY_ROWS' | translate}}
                 button.button-filter.e2e-open-filter(
                     ng-click="ctrl.openFilter = !ctrl.openFilter"
                 )

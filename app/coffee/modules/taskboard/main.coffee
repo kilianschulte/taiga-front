@@ -480,6 +480,10 @@ class TaskboardController extends mixOf(taiga.Controller, taiga.PageMixin, taiga
 
         @scope.pointsByRole = Object.keys(pointsByRole).map (key) -> return pointsByRole[key]
 
+    showTasks: (id) ->
+        return !@.hideEmptyUS || @taskboardTasksService.hasTasks id
+
+
 module.controller("TaskboardController", TaskboardController)
 
 

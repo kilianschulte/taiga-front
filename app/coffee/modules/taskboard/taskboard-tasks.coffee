@@ -172,4 +172,8 @@ class TaskboardTasksService extends taiga.Service
 
         @.usTasks = Immutable.fromJS(usTasks)
 
+    hasTasks: (id) ->
+        return @.usTasks.get(id) && @.usTasks.get(id).some((tasks) -> !tasks.isEmpty())
+
+
 angular.module("taigaKanban").service("tgTaskboardTasks", TaskboardTasksService)

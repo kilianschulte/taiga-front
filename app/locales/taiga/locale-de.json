@@ -1300,6 +1300,7 @@
         "TITLE_ACTION_ASSIGN": "Aufgabe zuweisen",
         "PLACEHOLDER_CARD_TITLE": "Das könnte ein Task sein",
         "PLACEHOLDER_CARD_TEXT": "Teile Stories in Tasks auf um sie einzeln zu verfolgen",
+        "HIDE_EMPTY_ROWS": "Leere Zeilen verbergen",
         "TABLE": {
             "COLUMN": "User-Story",
             "TITLE_ACTION_FOLD": "Spalte einklappen",
