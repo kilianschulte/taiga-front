@@ -12,3 +12,9 @@ h2.card-title
             ng-if="vm.item.getIn(['model', 'epics'])"
             epics="vm.item.getIn(['model', 'epics'])"
         )
+        br
+        tg-belong-to-sprint(
+          ng-if="vm.item.getIn(['model', 'milestone'])"
+          sprint="{project: vm.item.getIn(['model', 'project_extra_info', 'slug']), name: vm.item.getIn(['model', 'milestone_name']), slug: vm.item.getIn(['model', 'milestone_slug'])}"
+        )
+  

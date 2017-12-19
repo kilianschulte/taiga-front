@@ -177,6 +177,11 @@ class UsFiltersMixin
         @.generateFilters()
 
     addFilter: (newFilter) ->
+
+        if newFilter.category.dataType == "milestone"
+            unselect = @.unselectFilter
+            @.selectedFilters.filter((f) -> f.dataType == "milestone").forEach (f) -> unselect(f.dataType, f.id)
+
         @.selectFilter(newFilter.category.dataType, newFilter.filter.id)
         @.filtersReloadContent()
         @.generateFilters()
@@ -219,14 +224,20 @@ class UsFiltersMixin
         loadFilters.assigned_to = urlfilters.assigned_to
         loadFilters.owner = urlfilters.owner
         loadFilters.epic = urlfilters.epic
+        loadFilters.milestone = urlfilters.milestone
         loadFilters.q = urlfilters.q
 
         return @q.all([
             @rs.userstories.filtersData(loadFilters),
-            @filterRemoteStorageService.getFilters(@scope.projectId, @.storeCustomFiltersName)
+            @filterRemoteStorageService.getFilters(@scope.projectId, @.storeCustomFiltersName),
+            @rs.sprints.list(@scope.projectId, {include_tasks: 1})
         ]).then (result) =>
             data = result[0]
             customFiltersRaw = result[1]
+
+            data.sprints = result[2].milestones.filter((m) -> !m.closed).map((m) ->
+                return {id: m.id, name: m.name, count: m.user_stories.length}
+            )
 
             statuses = _.map data.statuses, (it) ->
                 it.id = it.id.toString()
@@ -261,6 +272,15 @@ class UsFiltersMixin
                     it.name = "Not in an epic"
 
                 return it
+            sprint = _.map data.sprints, (it) ->
+                if it.id
+                    it.id = it.id.toString()
+                    it.name = "Sprint #{it.name}"
+                else
+                    it.id = "null"
+                    it.name = "Not in a sprint"
+
+                return it
 
             @.selectedFilters = []
 
@@ -282,6 +302,10 @@ class UsFiltersMixin
 
             if loadFilters.epic
                 selected = @.formatSelectedFilters("epic", epic, loadFilters.epic)
+                @.selectedFilters = @.selectedFilters.concat(selected)
+
+            if loadFilters.milestone
+                selected = @.formatSelectedFilters("milestone", sprint, loadFilters.milestone)
                 @.selectedFilters = @.selectedFilters.concat(selected)
 
             @.filterQ = loadFilters.q
@@ -313,6 +337,11 @@ class UsFiltersMixin
                     title: @translate.instant("COMMON.FILTERS.CATEGORIES.EPIC"),
                     dataType: "epic",
                     content: epic
+                },
+                {
+                    title: @translate.instant("COMMON.FIELDS.SPRINT"),
+                    dataType: "milestone",
+                    content: sprint
                 }
             ]
 
