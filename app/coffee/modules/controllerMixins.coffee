@@ -230,7 +230,8 @@ class UsFiltersMixin
         return @q.all([
             @rs.userstories.filtersData(loadFilters),
             @filterRemoteStorageService.getFilters(@scope.projectId, @.storeCustomFiltersName),
-            @rs.sprints.list(@scope.projectId, {include_tasks: 1})
+            @rs.sprints.list(@scope.projectId),
+            @rs.userstories.listUnassigned(@scope.projectId)
         ]).then (result) =>
             data = result[0]
             customFiltersRaw = result[1]
@@ -238,6 +239,7 @@ class UsFiltersMixin
             data.sprints = result[2].milestones.filter((m) -> !m.closed).map((m) ->
                 return {id: m.id, name: m.name, count: m.user_stories.length}
             )
+            data.sprints.unshift({id: null, count: result[3][0].length});
 
             statuses = _.map data.statuses, (it) ->
                 it.id = it.id.toString()
