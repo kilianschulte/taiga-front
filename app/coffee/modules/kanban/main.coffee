@@ -204,6 +204,8 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
             status__is_archived: false
         }
 
+        params = _.merge params, {'milestone':  @params.sprint}
+
         if @.zoomLevel > 1
             params.include_attachments = 1
             params.include_tasks = 1
@@ -293,8 +295,11 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
 
     moveUs: (ctx, us, oldStatusId, newStatusId, index) ->
         us = @kanbanUserstoriesService.getUsModel(us.get('id'))
-
-        moveUpdateData = @kanbanUserstoriesService.move(us.id, newStatusId, index)
+        newStatus = @scope.usStatusById[newStatusId]
+        if newStatus.is_archived and !@scope.usByStatus.get(newStatusId.toString())
+            moveUpdateData = @kanbanUserstoriesService.moveToEnd(us.id, newStatusId)
+        else
+            moveUpdateData = @kanbanUserstoriesService.move(us.id, newStatusId, index)
 
         params = {
             include_attachments: true,

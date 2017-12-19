@@ -240,6 +240,15 @@ configure = ($routeProvider, $locationProvider, $httpProvider, $provide, $tgEven
         }
     )
 
+    $routeProvider.when("/project/:pslug/kanban/:sprint",
+        {
+            templateUrl: "kanban/kanban.html",
+            loader: true,
+            section: "kanban",
+            joyride: "kanban"
+        }
+    )
+
     # Milestone
     $routeProvider.when("/project/:pslug/taskboard/:sslug",
         {
