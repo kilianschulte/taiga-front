@@ -77,7 +77,7 @@ urls = {
     "project-detail-ref": "/project/:project/t/:ref"
     "project-backlog": "/project/:project/backlog"
     "project-taskboard": "/project/:project/taskboard/:sprint"
-    "project-kanban": "/project/:project/kanban/:sprint"
+    "project-kanban": "/project/:project/kanban"
     "project-kanban-sprint": "/project/:project/kanban/:sprint"
     "project-issues": "/project/:project/issues"
     "project-epics": "/project/:project/epics"
