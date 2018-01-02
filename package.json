@@ -118,6 +118,7 @@
     "dragula": "^3.7.2",
     "flot-axislabels": "git+https://git@github.com/juanfran/flot-axislabels.git",
     "gulp-class-prefix": "^1.0.1",
+    "gulp-git": "^2.5.0",
     "immutable": "^3.8.1",
     "intro.js": "^2.3.0",
     "jquery": "^2.2.3",

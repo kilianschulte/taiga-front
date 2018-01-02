@@ -33,7 +33,8 @@ var gulp = require("gulp"),
     addsrc = require('gulp-add-src'),
     jsonminify = require('gulp-jsonminify'),
     classPrefix = require('gulp-class-prefix'),
-    coffeelint = require('gulp-coffeelint');
+    coffeelint = require('gulp-coffeelint'),
+    git = require("gulp-git");
 
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -208,6 +209,7 @@ paths.libs.forEach(function(file) {
 });
 
 var isDeploy = argv["_"].indexOf("deploy") !== -1;
+var useAzure = argv["azure"] || false;
 
 /*
 ############################################################################
@@ -734,6 +736,23 @@ gulp.task("watch", function() {
     gulp.watch(paths.fonts, ["copy-fonts"]);
 });
 
+gulp.task("commit-dist", function() {
+  return gulp.src("./dist")
+    .pipe(git.add({cwd: "./dist"}))
+    .pipe(git.commit("gulp commit for "+version, {cwd: "./dist"}))
+})
+
+gulp.task("azure-deploy", ["commit-dist"], function(cb) {
+  if (useAzure) {
+    git.push('azure', 'master', {cwd: "./dist"}, function (err) {
+       if (err) throw err;
+       if (cb) cb();
+    });
+  } else {
+    cb();
+  }
+});
+
 gulp.task("deploy", function(cb) {
     runSequence("clear", "delete-old-version", "delete-tmp", [
         "copy",
@@ -742,7 +761,7 @@ gulp.task("deploy", function(cb) {
         "jslibs-deploy",
         "link-images",
         "compile-themes"
-    ], cb);
+    ], "azure-deploy", cb);
 });
 //The default task (called when you run gulp from cli)
 gulp.task("default", function(cb) {
