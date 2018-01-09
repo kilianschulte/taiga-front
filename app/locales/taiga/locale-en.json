@@ -1302,6 +1302,7 @@
         "TITLE_ACTION_ASSIGN": "Assign task",
         "PLACEHOLDER_CARD_TITLE": "This could be a task",
         "PLACEHOLDER_CARD_TEXT": "Split Stories into tasks to track them separately",
+        "HIDE_EMPTY_ROWS": "Hide empty rows",
         "TABLE": {
             "COLUMN": "User story",
             "TITLE_ACTION_FOLD": "Fold column",

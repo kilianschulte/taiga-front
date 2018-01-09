@@ -402,9 +402,6 @@ UsSprintButtonDirective = ($rootScope, $repo, $confirm, $loading, $modelTransfor
 
         render = (us) =>
 
-            console.log(us)
-            console.log($scope);
-
             statuses = $scope.project.milestones.filter((m) => !m.closed || m.id == us.milestone).map((m) => ({
               name: "Sprint #{m.name}",
               id: m.id,
@@ -448,7 +445,7 @@ UsSprintButtonDirective = ($rootScope, $repo, $confirm, $loading, $modelTransfor
                     us.milestone_slug = milestone.slug;
                 else
                     us.milestone = us.milestone_name = us.milestone_slug = null;
-                    
+
                 return us
 
             onSuccess = ->
