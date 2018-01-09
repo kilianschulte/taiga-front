@@ -204,8 +204,6 @@ class KanbanController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.Fi
             status__is_archived: false
         }
 
-        params = _.merge params, {'milestone':  @params.sprint}
-
         if @.zoomLevel > 1
             params.include_attachments = 1
             params.include_tasks = 1
