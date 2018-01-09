@@ -1,7 +1,8 @@
 .ticket-header {
-    align-items: center;
+    //align-items: center;
     display: flex;
-    margin: 1.5rem 0 2rem;
+    flex-direction: column;
+    margin: 1rem 0 2rem;
     position: relative;
     .ticket-title {
         @include font-size(larger);
@@ -9,16 +10,20 @@
         text-transform: uppercase;
         vertical-align: sub;
     }
-    .detail-status {
+    .detail-status,
+    .detail-sprint {
         @include font-size(small);
         display: flex;
-        margin-left: .25rem;
+        margin-top: .25rem;
         position: relative;
         .icon-arrow-down {
             @include svg-size(.75rem);
             fill: currentColor;
             margin-left: .25rem;
         }
+    }
+    .detail-sprint .detail-status-inner > span {
+       background: #999;//$primary-light;
     }
     .detail-status-inner {
         align-items: center;

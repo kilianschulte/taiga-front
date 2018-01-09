@@ -379,6 +379,123 @@ UsStatusButtonDirective = ($rootScope, $repo, $confirm, $loading, $modelTransfor
 
 module.directive("tgUsStatusButton", ["$rootScope", "$tgRepo", "$tgConfirm", "$tgLoading","$tgQueueModelTransformation", "$tgTemplate", "$compile",
                                       UsStatusButtonDirective])
+#############################################################################
+## User story sprint assignment button directive
+#############################################################################
+
+UsSprintButtonDirective = ($rootScope, $repo, $confirm, $loading, $modelTransform, $template, $compile, $translate) ->
+    # Display the status of a US and you can edit it.
+    #
+    # Example:
+    #     tg-us-status-button(ng-model="us")
+    #
+    # Requirements:
+    #   - Us object (ng-model)
+    #   - scope.statusById object
+    #   - $scope.project.my_permissions
+
+    template = $template.get("common/components/status-button.html", true)
+
+    link = ($scope, $el, $attrs, $model) ->
+        isEditable = ->
+            return $scope.project.my_permissions.indexOf("modify_us") != -1
+
+        render = (us) =>
+
+            console.log(us)
+            console.log($scope);
+
+            statuses = $scope.project.milestones.filter((m) => !m.closed || m.id == us.milestone).map((m) => ({
+              name: "Sprint #{m.name}",
+              id: m.id,
+            }))
+
+            status = statuses.find((s) => s.id == us.milestone)
+
+            if (!status)
+                status = {
+                  name: $translate.instant("COMMON.ASSIGNED_TO.NOT_ASSIGNED"),
+                  id: null
+                }
+            else
+                statuses.unshift({
+                  name: $translate.instant("COMMON.ASSIGNED_TO.DELETE_ASSIGNMENT"),
+                  id: null
+                })
+
+            html = template({
+                status: status
+                statuses: statuses
+                editable: isEditable()
+            })
+            $el.html(html)
+
+            $compile($el.contents())($scope)
+
+        save = (status) =>
+            $el.find(".pop-status").popover().close()
+
+            currentLoading = $loading()
+                .target($el.find('.js-edit-status'))
+                .start()
+
+            transform = $modelTransform.save (us) ->
+                milestone = $scope.project.milestones.find((m) => m.id == status);
+
+                if (milestone)
+                    us.milestone = milestone.id
+                    us.milestone_name = milestone.name;
+                    us.milestone_slug = milestone.slug;
+                else
+                    us.milestone = us.milestone_name = us.milestone_slug = null;
+                    
+                return us
+
+            onSuccess = ->
+                $rootScope.$broadcast("object:updated")
+                currentLoading.finish()
+
+            onError = ->
+                $confirm.notify("error")
+                currentLoading.finish()
+
+            transform.then(onSuccess, onError)
+
+        $el.on "click", ".js-edit-status", (event) ->
+            event.preventDefault()
+            event.stopPropagation()
+            return if not isEditable()
+
+            $el.find(".pop-status").popover().open()
+
+        $el.on "click", ".status", (event) ->
+            event.preventDefault()
+            event.stopPropagation()
+            return if not isEditable()
+
+            target = angular.element(event.currentTarget)
+            status = target.data("status-id")
+
+            save(status)
+
+        $scope.$watch () ->
+            return $model.$modelValue?.milestone
+        , () ->
+            us = $model.$modelValue
+
+            render(us) if us
+
+        $scope.$on "$destroy", ->
+            $el.off()
+
+    return {
+        link: link
+        restrict: "EA"
+        require: "ngModel"
+    }
+
+module.directive("tgUsSprintButton", ["$rootScope", "$tgRepo", "$tgConfirm", "$tgLoading","$tgQueueModelTransformation", "$tgTemplate", "$compile", "$translate",
+                                      UsSprintButtonDirective])
 
 
 #############################################################################

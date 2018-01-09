@@ -44,8 +44,8 @@
         format="text"
     )
     tg-belong-to-sprint(
-      ng-if="::vm.item.milestone"
-      sprint="::{project: vm.item.project_extra_info.slug, name: vm.item.milestone_name, slug: vm.item.milestone_slug}"
+      ng-if="vm.item.milestone"
+      sprint="{project: vm.item.project_extra_info.slug, name: vm.item.milestone_name, slug: vm.item.milestone_slug}"
     )
 
 
