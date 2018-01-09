@@ -211,6 +211,8 @@ paths.libs.forEach(function(file) {
 var isDeploy = argv["_"].indexOf("deploy") !== -1;
 var useAzure = argv["azure"] || false;
 
+var deploy_name = argv.name ? argv.name : "commit for "+version;
+
 /*
 ############################################################################
 # Layout/CSS Related tasks
@@ -739,12 +741,12 @@ gulp.task("watch", function() {
 gulp.task("commit-dist", function() {
   return gulp.src("./dist")
     .pipe(git.add({cwd: "./dist"}))
-    .pipe(git.commit("gulp commit for "+version, {cwd: "./dist"}))
+    .pipe(git.commit(deploy_name, {cwd: "./dist", quiet: true}))
 })
 
 gulp.task("azure-deploy", ["commit-dist"], function(cb) {
   if (useAzure) {
-    git.push('azure', 'master', {cwd: "./dist"}, function (err) {
+    git.push('azure', 'master', {cwd: "./dist", quiet: true}, function (err) {
        if (err) throw err;
        if (cb) cb();
     });
