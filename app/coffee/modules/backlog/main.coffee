@@ -109,6 +109,9 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
 
                 @scope.$broadcast("showTags", @showTags)
 
+            if !@location.search().milestone
+                @.addFilter({category: {dataType: "milestone"}, filter: {id: "null"}});
+
         # On Error
         promise.then null, @.onInitialDataError.bind(@)
 
@@ -288,7 +291,7 @@ class BacklogController extends mixOf(taiga.Controller, taiga.PageMixin, taiga.F
 
         params.page = @.page
 
-        promise = @rs.userstories.listUnassigned(@scope.projectId, params, pageSize)
+        promise = @rs.userstories.listAllWithPagination(@scope.projectId, params, pageSize)
 
         return promise.then (result) =>
 

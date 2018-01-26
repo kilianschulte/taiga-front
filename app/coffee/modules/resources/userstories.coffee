@@ -63,6 +63,17 @@ resourceProvider = ($repo, $http, $urls, $storage, $q) ->
             enablePagination: true
         }, true)
 
+    service.listAllWithPagination = (projectId, filters, pageSize) ->
+        params = {"project": projectId}
+        params = _.extend({}, params, filters or {})
+        service.storeQueryParams(projectId, params)
+
+        return $repo.queryMany("userstories", _.extend(params, {
+            page_size: pageSize
+        }), {
+            enablePagination: true
+        }, true)
+
     service.listAll = (projectId, filters) ->
         params = {"project": projectId}
         params = _.extend({}, params, filters or {})
