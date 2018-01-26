@@ -1289,7 +1289,8 @@ MoveToSprintPopoverDirective = ($rootScope, $repo, $confirm, $loading, $modelTra
         $scope.$on "toggleMoveToSprintPopover", ->
             $el.children(".move-to-sprint-popover").fadeToggle(200)
 
-        render()
+        $scope.$on "userstories:loaded", ->
+            render()
 
     return {
         link: link
