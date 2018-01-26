@@ -698,6 +698,14 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
 
             return true
 
+        $el.on "click", "#check-all-rows input", (event) ->
+            event.target.indeterminate = false;
+            checked = event.target.checked
+            $(".backlog-table-body input:checkbox").prop("checked", checked).each ->
+                if $(this).closest(".us-item-row").hasClass('is-checked') != checked
+                    $(this).closest(".us-item-row").toggleClass('is-checked');
+                    checkSelected($(this))
+
         # Enable move to current sprint only when there are selected us's
         $el.on "change", ".backlog-table-body input:checkbox", (event) ->
             # check elements between the last two if shift is pressed
@@ -720,6 +728,16 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
             target = angular.element(event.currentTarget)
             target.closest(".us-item-row").toggleClass('is-checked')
             checkSelected(target)
+
+            all = true;
+
+            checked = $(".backlog-table-body input:checkbox").first().prop("checked")
+
+            $(".backlog-table-body input:checkbox").each ->
+                return all = all && checked == $(this).prop("checked")
+
+            $("#check-all-rows input").prop("indeterminate", !all).prop("checked", checked);
+
 
         $el.on "click", "#move-to-latest-sprint", (event) =>
             ussToMove = getUsToMove()
