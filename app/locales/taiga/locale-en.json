@@ -1214,6 +1214,7 @@
         "CUSTOMIZE_GRAPH_TITLE": "Set up the points and sprints through the Admin",
         "MOVE_US_TO_CURRENT_SPRINT": "Move to Current Sprint",
         "MOVE_US_TO_LATEST_SPRINT": "Move to latest Sprint",
+        "MOVE_US_TO_SPRINT": "Move to Sprint",
         "EMPTY": "The backlog is empty!",
         "CREATE_NEW_US": "Create a new US",
         "CREATE_NEW_US_EMPTY_HELP": "You may want to create a new user story",

@@ -82,3 +82,27 @@
         vertical-align: middle;
     }
 }
+
+.move-to-sprint {
+    display: inline-block;
+    position: relative;
+
+    .move-to-sprint-popover {
+        background: $mass-white;
+        display: none;
+        left: 0;
+        position: absolute;
+        top: 100%;
+        width: 100%;
+        z-index: 100;
+
+        li {
+            padding: .6rem 2rem;
+            transition: background .2s linear;
+        }
+
+        li:hover {
+            background: $whitish;
+        }
+    }
+}

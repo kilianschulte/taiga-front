@@ -1,0 +1,26 @@
+span.text(translate="BACKLOG.MOVE_US_TO_SPRINT")
+tg-svg(svg-icon="icon-arrow-down")
+
+ul.move-to-sprint-popover
+    li.e2e-move-to-sprint(
+        ng-if="currentSprint"
+        href=""
+        title="{{'BACKLOG.MOVE_US_TO_CURRENT_SPRINT' | translate}}"
+        id="move-to-current-sprint"
+    )
+        tg-svg(svg-icon="icon-move")
+        span.text(translate="BACKLOG.MOVE_US_TO_CURRENT_SPRINT")
+    li.e2e-move-to-sprint(
+        ng-if="!currentSprint"
+        href=""
+        title="{{'BACKLOG.MOVE_US_TO_LATEST_SPRINT' | translate}}"
+        id="move-to-latest-sprint"
+    )
+        tg-svg(svg-icon="icon-move")
+        span.text(translate="BACKLOG.MOVE_US_TO_LATEST_SPRINT")
+    li.move-to-sprint-by-id(
+        ng-repeat="sprint in sprints"
+        data-sprint-id="{{sprint.id}}"
+    )
+        span.text
+            Sprint {{sprint.name}}

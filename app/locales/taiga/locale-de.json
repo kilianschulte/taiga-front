@@ -1212,6 +1212,7 @@
         "CUSTOMIZE_GRAPH_TITLE": "Stelle Points und Sprints über das Adminpanel ein",
         "MOVE_US_TO_CURRENT_SPRINT": "Zum aktuellen Sprint wechseln",
         "MOVE_US_TO_LATEST_SPRINT": "Zum aktuellen Sprint wechseln.",
+        "MOVE_US_TO_SPRINT": "In Sprint verschieben",
         "EMPTY": "Das Backlog ist leer!",
         "CREATE_NEW_US": "Eine neue User-Story anlegen",
         "CREATE_NEW_US_EMPTY_HELP": "Sie sollten eine User-Story anlegen",

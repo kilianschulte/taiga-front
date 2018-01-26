@@ -36,22 +36,12 @@ div.wrapper(tg-backlog, ng-controller="BacklogController as ctrl",
 
         div.backlog-menu
             div.backlog-table-options
-                a.menu-button.move-to-current-sprint.move-to-sprint.e2e-move-to-sprint(
-                    ng-if="currentSprint"
+                a.menu-button.move-to-sprint(
                     href=""
-                    title="{{'BACKLOG.MOVE_US_TO_CURRENT_SPRINT' | translate}}"
-                    id="move-to-current-sprint"
+                    title="{{'BACKLOG.MOVE_US_TO_SPRINT' | translate}}"
+                    id="move-to-sprint"
+                    tg-move-to-sprint-popover
                 )
-                    tg-svg(svg-icon="icon-move")
-                    span.text(translate="BACKLOG.MOVE_US_TO_CURRENT_SPRINT")
-                a.menu-button.move-to-latest-sprint.move-to-sprint.e2e-move-to-sprint(
-                    ng-if="!currentSprint"
-                    href=""
-                    title="{{'BACKLOG.MOVE_US_TO_LATEST_SPRINT' | translate}}"
-                    id="move-to-latest-sprint"
-                )
-                    tg-svg(svg-icon="icon-move")
-                    span.text(translate="BACKLOG.MOVE_US_TO_LATEST_SPRINT")
                 a.menu-button.e2e-open-filter.ng-animate-disabled(
                     ng-if="!ctrl.activeFilters"
                     href=""

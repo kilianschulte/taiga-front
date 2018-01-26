@@ -638,7 +638,6 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
             return _.map ussDom, (item) ->
                 item =  $(item).closest('.tg-scope')
                 itemScope = item.scope()
-                itemScope.us.milestone = $scope.sprints[0].id
                 return itemScope.us
 
         moveUssToSprint = (selectedUss, sprint) ->
@@ -661,7 +660,7 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
                     us_id: us.id
                     order: us.sprint_order
                 }
-            $rs.userstories.bulkUpdateMilestone($scope.project.id, $scope.sprints[0].id, data).then =>
+            $rs.userstories.bulkUpdateMilestone($scope.project.id, sprint.id, data).then =>
                 $ctrl.loadSprints()
                 $ctrl.loadProjectStats()
                 $ctrl.toggleVelocityForecasting()
@@ -738,6 +737,8 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
 
             $("#check-all-rows input").prop("indeterminate", !all).prop("checked", checked);
 
+        $el.on "click", "#move-to-sprint", (event) =>
+            $scope.$broadcast "toggleMoveToSprintPopover"
 
         $el.on "click", "#move-to-latest-sprint", (event) =>
             ussToMove = getUsToMove()
@@ -748,6 +749,23 @@ BacklogDirective = ($repo, $rootscope, $translate, $rs) ->
             ussToMove = getUsToMove()
 
             $scope.$apply(_.partial(moveToCurrentSprint, ussToMove))
+
+        $el.on "click", ".move-to-sprint-by-id", (event) =>
+            ussToMove = getUsToMove()
+
+            target = angular.element(event.currentTarget)
+            id = target.data("sprint-id")
+            sprint = $scope.sprintsById[id]
+
+            if !sprint
+                return
+
+            $("#check-all-rows input").prop("indeterminate", false).prop("checked", false);
+
+            moveUss = (selectedUss) ->
+                moveUssToSprint(selectedUss, sprint)
+
+            $scope.$apply(_.partial(moveUss, ussToMove))
 
         $el.on "click", "#show-tags", (event) ->
             event.preventDefault()
@@ -1233,3 +1251,51 @@ TgBacklogProgressBarDirective = ($template, $compile) ->
     return {link: link}
 
 module.directive("tgBacklogProgressBar", ["$tgTemplate", "$compile", TgBacklogProgressBarDirective])
+
+
+#############################################################################
+## move to sprint popover directive
+#############################################################################
+
+MoveToSprintPopoverDirective = ($rootScope, $repo, $confirm, $loading, $modelTransform, $template, $compile, $translate) ->
+
+    template = $template.get("backlog/move-to-sprint-popover.html", true)
+
+    link = ($scope, $el, $attrs) ->
+
+        render = () =>
+
+            sprints = $scope.project.milestones.filter((m) => !m.closed).map((m) => ({
+              name: "Sprint #{m.name}",
+              id: m.id,
+            }))
+
+            sprints.unshift({
+              name: $translate.instant("COMMON.ASSIGNED_TO.DELETE_ASSIGNMENT"),
+              id: null
+            })
+
+            html = template({
+                sprints: sprints
+            })
+
+            $el.html(html)
+
+            $compile($el.contents())($scope)
+
+        $scope.$on "$destroy", ->
+            $el.off()
+
+        $scope.$on "toggleMoveToSprintPopover", ->
+            $el.children(".move-to-sprint-popover").fadeToggle(200)
+
+        render()
+
+    return {
+        link: link
+        restrict: "EA"
+    }
+
+
+module.directive("tgMoveToSprintPopover", ["$rootScope", "$tgRepo", "$tgConfirm", "$tgLoading","$tgQueueModelTransformation", "$tgTemplate", "$compile", "$translate",
+                                      MoveToSprintPopoverDirective])
