@@ -209,7 +209,9 @@
                 "ASSIGNED_TO": "Zugeordnet zu",
                 "CREATED_BY": "Erstellt durch",
                 "CUSTOM_FILTERS": "Benutzerfilter",
-                "EPIC": "Epic"
+                "EPIC": "Epic",
+                "SPRINT": "Sprint",
+                "INVOLVED": "Beteiligt"
             }
         },
         "WYSIWYG": {

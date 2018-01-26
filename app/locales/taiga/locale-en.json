@@ -210,7 +210,9 @@
                 "ASSIGNED_TO": "Assigned to",
                 "CREATED_BY": "Created by",
                 "CUSTOM_FILTERS": "Custom filters",
-                "EPIC": "Epic"
+                "EPIC": "Epic",
+                "SPRINT": "Sprint",
+                "INVOLVED": "Involved"
             }
         },
         "WYSIWYG": {

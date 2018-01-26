@@ -81,17 +81,66 @@ resourceProvider = ($repo, $http, $urls, $storage, $q) ->
         return @.queryWithExtendedFilter params, (p) =>
             return $repo.queryMany("userstories", p)
 
-    service.queryWithExtendedFilter = (params, queryFunc) ->
+    service.queryWithExtendedFilter = (par, queryFunc) ->
+
+        promises = []
+
+        testUs = (us) => (name, fn) =>
+            if !par[name]
+                return true
+            else if us[name] instanceof Array
+                return us[name].any (p) => par[name].includes(fn(p))
+            else
+                return par[name].includes(us[name])
+
+
+        filterUSList = (usList) => usList.filter (us) =>
+            test = testUs(us)
+            valid = test("status") && test("assigned_to") && test("owner") && test("milestone") &&
+                   test "epic", (e) => e.id && test "tags", (t) => t[0]
+            return valid
+
+
+        params = _.extend({}, par)
+
+        if (params.involved)
+            if (!params.assigned_to)
+                params.assigned_to = ""
+            involved = params.involved.split(",")
+            involved.forEach (i) =>
+                if (!params.assigned_to.includes(i))
+                    if (params.assigned_to != "")
+                        params.assigned_to += ","
+                    params.assigned_to += i
+            promises.push $repo.q.all(involved.map (i) =>
+                return $repo.queryMany("tasks", {project: params.project, assigned_to: i}).then (data) =>
+                    usIds = _.uniq data.map (d) => d.user_story
+                    return $repo.q.all(usIds.map (us) => @.get params.project, us).then (uss) =>
+                        return filterUSList(uss)
+            ).then _.flatten
+
         if (params.milestone && params.milestone.includes(","))
-            return $repo.q.all(params.milestone.split(",").map (m) =>
+            params.milestone.split(",").forEach (m) =>
                 p = _.extend({}, params, {milestone: m})
-                return queryFunc(p)
-            ).then (data) =>
-                return data.reduce (list, sublist) =>
-                    list.concat(sublist)
-                , []
+                promises.push queryFunc(p)
         else
-            return queryFunc(params)
+            promises.push queryFunc(params)
+
+        return $repo.q.all(promises).then (data) =>
+            models = []
+            headers = null
+            data.forEach (d) =>
+                if (d.length == 2 && typeof d[1] == "function")
+                    models.push d[0]
+                    headers = d[1]
+                else
+                    models.push d
+
+            models = _.uniqBy(_.flatten(models), "id")
+            if headers
+                return [models, headers]
+            else
+                return models
 
     service.bulkCreate = (projectId, status, bulk) ->
         data = {

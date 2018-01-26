@@ -211,15 +211,26 @@ class UsFiltersMixin
         return @q.all([
           @rs.userstories.filtersData(params),
           @rs.sprints.list(@scope.projectId),
-          @rs.userstories.listUnassigned(@scope.projectId)
+          @rs.userstories.listUnassigned(@scope.projectId),
+          @rs.tasks.filtersData({project: @scope.projectId})
         ]).then (data) =>
 
             sprints = data[1].milestones.filter((m) -> !m.closed).map (m) ->
                 return {id: m.id, name: m.name, count: m.user_stories.length}
-
             sprints.unshift({id: null, count: data[2][0].length})
-
             data[0].sprints = sprints
+
+            task_involved = data[3].assigned_to
+
+            involved = data[0].assigned_to.map (e) =>
+                task = task_involved.find (t) => t.id == e.id
+                if task
+                    task_involved.splice(task_involved.indexOf(task), 1)
+                    return _.extend({}, e, {count: e.count + task.count})
+                else
+                    return _.extend({}, e)
+            involved.concat(task_involved)
+            data[0].involved = involved;
 
             return data[0]
 
@@ -238,7 +249,8 @@ class UsFiltersMixin
         loadFilters.q = urlfilters.q
 
         extendedFilters = {
-          milestone: urlfilters.milestone
+          milestone: urlfilters.milestone,
+          involved: urlfilters.involved
         }
 
         return @q.all([
@@ -291,6 +303,16 @@ class UsFiltersMixin
 
                 return it
 
+            involved = _.map data.involved, (it) ->
+                if (it.id)
+                    it.id = it.id.toString()
+                else
+                    it.id = "null"
+
+                it.name = it.full_name || "Unassigned"
+
+                return it
+
             @.selectedFilters = []
 
             if loadFilters.status
@@ -315,6 +337,10 @@ class UsFiltersMixin
 
             if extendedFilters.milestone
                 selected = @.formatSelectedFilters("milestone", sprint, extendedFilters.milestone)
+                @.selectedFilters = @.selectedFilters.concat(selected)
+
+            if (extendedFilters.involved)
+                selected = @.formatSelectedFilters("involved", involved, extendedFilters.involved)
                 @.selectedFilters = @.selectedFilters.concat(selected)
 
             @.filterQ = loadFilters.q
@@ -348,9 +374,14 @@ class UsFiltersMixin
                     content: epic
                 },
                 {
-                    title: @translate.instant("COMMON.FIELDS.SPRINT"),
+                    title: @translate.instant("COMMON.FILTERS.CATEGORIES.SPRINT"),
                     dataType: "milestone",
                     content: sprint
+                },
+                {
+                    title: @translate.instant("COMMON.FILTERS.CATEGORIES.INVOLVED"),
+                    dataType: "involved",
+                    content: involved
                 }
             ]
 
