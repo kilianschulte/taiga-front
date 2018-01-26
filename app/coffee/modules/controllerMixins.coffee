@@ -177,11 +177,6 @@ class UsFiltersMixin
         @.generateFilters()
 
     addFilter: (newFilter) ->
-
-        if newFilter.category.dataType == "milestone"
-            unselect = @.unselectFilter
-            @.selectedFilters.filter((f) -> f.dataType == "milestone").forEach (f) -> unselect(f.dataType, f.id)
-
         @.selectFilter(newFilter.category.dataType, newFilter.filter.id)
         @.filtersReloadContent()
         @.generateFilters()
@@ -212,6 +207,22 @@ class UsFiltersMixin
             @filterRemoteStorageService.storeFilters(@scope.projectId, userFilters, @.storeCustomFiltersName).then(@.generateFilters)
             @.generateFilters()
 
+    filtersData: (params) ->
+        return @q.all([
+          @rs.userstories.filtersData(params),
+          @rs.sprints.list(@scope.projectId),
+          @rs.userstories.listUnassigned(@scope.projectId)
+        ]).then (data) =>
+
+            sprints = data[1].milestones.filter((m) -> !m.closed).map (m) ->
+                return {id: m.id, name: m.name, count: m.user_stories.length}
+
+            sprints.unshift({id: null, count: data[2][0].length})
+
+            data[0].sprints = sprints
+
+            return data[0]
+
     generateFilters: ->
         @.storeFilters(@params.pslug, @location.search(), @.storeFiltersName)
 
@@ -224,22 +235,18 @@ class UsFiltersMixin
         loadFilters.assigned_to = urlfilters.assigned_to
         loadFilters.owner = urlfilters.owner
         loadFilters.epic = urlfilters.epic
-        loadFilters.milestone = urlfilters.milestone
         loadFilters.q = urlfilters.q
 
+        extendedFilters = {
+          milestone: urlfilters.milestone
+        }
+
         return @q.all([
-            @rs.userstories.filtersData(loadFilters),
-            @filterRemoteStorageService.getFilters(@scope.projectId, @.storeCustomFiltersName),
-            @rs.sprints.list(@scope.projectId),
-            @rs.userstories.listUnassigned(@scope.projectId)
+            @.filtersData(loadFilters),
+            @filterRemoteStorageService.getFilters(@scope.projectId, @.storeCustomFiltersName)
         ]).then (result) =>
             data = result[0]
             customFiltersRaw = result[1]
-
-            data.sprints = result[2].milestones.filter((m) -> !m.closed).map((m) ->
-                return {id: m.id, name: m.name, count: m.user_stories.length}
-            )
-            data.sprints.unshift({id: null, count: result[3][0].length});
 
             statuses = _.map data.statuses, (it) ->
                 it.id = it.id.toString()
@@ -306,8 +313,8 @@ class UsFiltersMixin
                 selected = @.formatSelectedFilters("epic", epic, loadFilters.epic)
                 @.selectedFilters = @.selectedFilters.concat(selected)
 
-            if loadFilters.milestone
-                selected = @.formatSelectedFilters("milestone", sprint, loadFilters.milestone)
+            if extendedFilters.milestone
+                selected = @.formatSelectedFilters("milestone", sprint, extendedFilters.milestone)
                 @.selectedFilters = @.selectedFilters.concat(selected)
 
             @.filterQ = loadFilters.q
