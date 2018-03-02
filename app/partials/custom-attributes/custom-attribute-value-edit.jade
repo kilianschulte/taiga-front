@@ -23,7 +23,7 @@ form.custom-field-single.editable
         select(name="value")
             <% if (!options.find(o => o == value)) { %>
             option(selected disabled hidden)
-                {{'COMMON.CUSTOM_ATTRIBUTES.CHOOSE' | translate}}
+                  {{'COMMON.CUSTOM_ATTRIBUTES.CHOOSE' | translate}}
             <% } %>
             <% for (let opt of options) { if (value == opt) { %>
             option(selected)

@@ -212,7 +212,8 @@ class UsFiltersMixin
           @rs.userstories.filtersData(params),
           @rs.sprints.list(@scope.projectId),
           @rs.userstories.listUnassigned(@scope.projectId),
-          @rs.tasks.filtersData({project: @scope.projectId})
+          @rs.tasks.filtersData({project: @scope.projectId}),
+          @rs.customAttributes.userstory.list(@scope.projectId)
         ]).then (data) =>
 
             sprints = data[1].milestones.filter((m) -> !m.closed).map (m) ->
@@ -232,6 +233,11 @@ class UsFiltersMixin
             involved.concat(task_involved)
             data[0].involved = involved;
 
+            priority = data[4].find((a) => a.name == "Priority")
+            if priority && priority.description.includes("/")
+                options = priority.description.split("/").map((s) => s.trim())
+                data[0].priority = [{id: null}].concat(options.map((o, i) => ({id: i+1, name: o})))
+
             return data[0]
 
     generateFilters: ->
@@ -250,7 +256,8 @@ class UsFiltersMixin
 
         extendedFilters = {
           milestone: urlfilters.milestone,
-          involved: urlfilters.involved
+          involved: urlfilters.involved,
+          priority: urlfilters.priority
         }
 
         return @q.all([
@@ -313,6 +320,16 @@ class UsFiltersMixin
 
                 return it
 
+            if (data.priority)
+                priority = _.map data.priority, (it) ->
+                    if (it.id)
+                        it.id = it.id.toString()
+                    else
+                        it.id = "null"
+
+                    it.name = it.name || "Unassigned"
+                    return it
+
             @.selectedFilters = []
 
             if loadFilters.status
@@ -339,8 +356,12 @@ class UsFiltersMixin
                 selected = @.formatSelectedFilters("milestone", sprint, extendedFilters.milestone)
                 @.selectedFilters = @.selectedFilters.concat(selected)
 
-            if (extendedFilters.involved)
+            if extendedFilters.involved
                 selected = @.formatSelectedFilters("involved", involved, extendedFilters.involved)
+                @.selectedFilters = @.selectedFilters.concat(selected)
+
+            if data.priority && extendedFilters.priority
+                selected = @.formatSelectedFilters("priority", priority, extendedFilters.priority)
                 @.selectedFilters = @.selectedFilters.concat(selected)
 
             @.filterQ = loadFilters.q
@@ -384,6 +405,13 @@ class UsFiltersMixin
                     content: involved
                 }
             ]
+
+            if data.priority
+                @.filters.push({
+                    title: @translate.instant("COMMON.FILTERS.CATEGORIES.PRIORITY"),
+                    dataType: "priority",
+                    content: priority
+                })
 
             @.customFilters = []
             _.forOwn customFiltersRaw, (value, key) =>

@@ -70,77 +70,97 @@ resourceProvider = ($repo, $http, $urls, $storage, $q) ->
 
         params = _.extend({}, params, {page_size: pageSize})
 
-        return @.queryWithExtendedFilter params, (p) =>
-            return $repo.queryMany("userstories", p, {enablePagination: true}, true)
+        return @.queryWithExtendedFilters params, (p) =>
+            return $repo.queryMany("userstories", p, {enablePagination: true}, true).then((list) => ({models: list[0], header: list[1]}))
 
     service.listAll = (projectId, filters) ->
         params = {"project": projectId}
         params = _.extend({}, params, filters or {})
         service.storeQueryParams(projectId, params)
 
-        return @.queryWithExtendedFilter params, (p) =>
-            return $repo.queryMany("userstories", p)
+        return @.queryWithExtendedFilters params, (p) =>
+            return $repo.queryMany("userstories", p).then((list) => ({models: list}))
 
-    service.queryWithExtendedFilter = (par, queryFunc) ->
-
-        promises = []
-
-        testUs = (us) => (name, fn) =>
-            if !par[name]
-                return true
-            else if us[name] instanceof Array
-                return us[name].any (p) => par[name].includes(fn(p))
-            else
-                return par[name].includes(us[name])
-
-
-        filterUSList = (usList) => usList.filter (us) =>
-            test = testUs(us)
-            valid = test("status") && test("assigned_to") && test("owner") && test("milestone") &&
-                   test "epic", (e) => e.id && test "tags", (t) => t[0]
-            return valid
-
-
+    service.queryWithExtendedFilters = (par, queryFunc) ->
+        #debugger;
         params = _.extend({}, par)
 
-        if (params.involved)
-            if (!params.assigned_to)
-                params.assigned_to = ""
-            involved = params.involved.split(",")
-            involved.forEach (i) =>
-                if (!params.assigned_to.includes(i))
-                    if (params.assigned_to != "")
-                        params.assigned_to += ","
-                    params.assigned_to += i
-            promises.push $repo.q.all(involved.map (i) =>
-                return $repo.queryMany("tasks", {project: params.project, assigned_to: i}).then (data) =>
-                    usIds = _.uniq data.map (d) => d.user_story
-                    return $repo.q.all(usIds.map (us) => @.get params.project, us).then (uss) =>
-                        return filterUSList(uss)
-            ).then _.flatten
+        if params.page && (params.involved || params.priority)
+            params.page_size = 200
 
+
+        # filter: us in sprint
         if (params.milestone && params.milestone.includes(","))
-            params.milestone.split(",").forEach (m) =>
+            promise = $repo.q.all( params.milestone.split(",").map (m) =>
+                # concat by or
                 p = _.extend({}, params, {milestone: m})
-                promises.push queryFunc(p)
+                return queryFunc(p)
+            ).then _.flatten
         else
-            promises.push queryFunc(params)
+            promise = queryFunc(params)
 
-        return $repo.q.all(promises).then (data) =>
-            models = []
-            headers = null
-            data.forEach (d) =>
-                if (d.length == 2 && typeof d[1] == "function")
-                    models.push d[0]
-                    headers = d[1]
+        return promise.then((result) =>
+            userstories = result.models
+            header = result.header
+            # filter: involved in us
+            if (userstories.length > 0 && params.involved)
+                involved = params.involved.split(",")
+
+                # filter: us assigned to
+                params.assigned_to = params.assigned_to || ""
+                joined = involved.filter((i) => !params.assigned_to.includes(i)).join(",")
+                if (!params.assigned_to)
+                    params.assigned_to = joined
                 else
-                    models.push d
-
-            models = _.uniqBy(_.flatten(models), "id")
-            if headers
-                return [models, headers]
+                    params.assigned_to += ","+joined
+                return $repo.queryMany("userstories", {project: params.project, assigned_to: params.assigned_to}).then (usAssigned) =>
+                    return $repo.q.all(involved.map (i) =>
+                        # concat tasks by or
+                        return $repo.queryMany("tasks", {project: params.project, assigned_to: i}).then (data) =>
+                            usIds = _.uniq data.map (d) => d.user_story
+                            return $repo.q.all(usIds.map (us) => @.get params.project, us).then _.flatten
+                    ).then(_.flatten).then((usTasks) =>
+                        # concat by or
+                        usInvolved = _.uniq usTasks.concat(usAssigned)
+                        # filter by and
+                        return userstories.filter((u) => usInvolved.find((u2) => u2.id == u.id))
+                    ).then (userstories) =>
+                        return {models: userstories, header}
             else
-                return models
+                return result
+        ).then((result) =>
+            userstories = result.models
+            header = result.header
+            # filter: us has priority
+            if (userstories.length > 0 && params.priority)
+                priorities = params.priority.split(",")
+                return $repo.queryMany("custom-attributes/userstory", {project: params.project}).then((attributes) =>
+                    priorityAttrib = attributes.find((a) => a.name == "Priority")
+                    priorityOptions = priorityAttrib.description.split("/").map((o) => o.trim())
+                    return $repo.q.all(userstories.map (u) =>
+                        $repo.queryOne("custom-attributes-values/userstory", u.id).then (usAttribs) =>
+                            return {userstory: u, attributes: usAttribs}
+                    ).then((usList) =>
+                        # filter by and
+                        userstories = usList.filter((us) =>
+                            attribValue = us.attributes.attributes_values[priorityAttrib.id]
+                            if !attribValue
+                                attribValue = "null"
+                            else
+                                attribValue = (priorityOptions.indexOf(attribValue)+1).toString()
+                            return priorities.find((p) => p == attribValue) && true
+                        ).map (us) => us.userstory
+                        return {models: userstories, header}
+                    )
+                )
+            else
+                return result
+        ).then((result) =>
+            if (result.header)
+                return [result.models, result.header]
+            else
+                return result.models
+        )
 
     service.bulkCreate = (projectId, status, bulk) ->
         data = {

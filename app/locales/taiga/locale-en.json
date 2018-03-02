@@ -213,7 +213,8 @@
                 "CUSTOM_FILTERS": "Custom filters",
                 "EPIC": "Epic",
                 "SPRINT": "Sprint",
-                "INVOLVED": "Involved"
+                "INVOLVED": "Involved",
+                "PRIORITY": "Priority"
             }
         },
         "WYSIWYG": {
