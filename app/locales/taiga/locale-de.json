@@ -190,7 +190,8 @@
             "SAVE": "Benutzerdefiniertes Feld speichern",
             "EDIT": "Benutzerdefiniertes Feld bearbeiten",
             "DELETE": "benutzerdefiniertes Attribut löschen",
-            "CONFIRM_DELETE": "Alle Werte in benutzerdefinierten Feldern werden gelöscht.\n Sind Sie sicher, dass Sie fortfahren wollen?"
+            "CONFIRM_DELETE": "Alle Werte in benutzerdefinierten Feldern werden gelöscht.\n Sind Sie sicher, dass Sie fortfahren wollen?",
+            "CHOOSE": "Wähle eine Option"
         },
         "FILTERS": {
             "INPUT_PLACEHOLDER": "Betreff oder Verweis",

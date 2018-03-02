@@ -164,6 +164,10 @@ CustomAttributeValueDirective = ($template, $selectedText, $compile, $translate,
                 value = attributeValue.value
             editable = isEditable()
 
+            if (attributeValue.description.includes("/"))
+                attributeValue.options = attributeValue.description.split('/').map((s) => s.trim())
+                attributeValue.type = "enum"
+
             ctx = {
                 id: attributeValue.id
                 name: attributeValue.name
@@ -171,6 +175,7 @@ CustomAttributeValueDirective = ($template, $selectedText, $compile, $translate,
                 value: value
                 isEditable: editable
                 type: attributeValue.type
+                options: attributeValue.options
             }
 
             scope = $scope.$new()
@@ -219,7 +224,7 @@ CustomAttributeValueDirective = ($template, $selectedText, $compile, $translate,
             form = $el.find("form").checksley()
             return if not form.validate()
 
-            input = $el.find("input[name=value], textarea[name='value']")
+            input = $el.find("input[name=value], textarea[name='value'], select[name=value]")
             attributeValue.value = input.val()
             if attributeValue.type is DATE_TYPE
                 if moment(attributeValue.value, prettyDate).isValid()

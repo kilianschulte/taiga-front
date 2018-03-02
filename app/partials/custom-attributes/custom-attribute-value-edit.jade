@@ -19,6 +19,19 @@ form.custom-field-single.editable
         input#custom-field-value(name="value", type="text", data-pikaday, value!="<%- value %>")
         <% } else if (type=="url") { %>
         input#custom-field-value(name="value", type="url", value!="<%- value %>")
+        <% } else if (type=="enum") { %>
+        select(name="value")
+            <% if (!options.find(o => o == value)) { %>
+            option(selected disabled hidden)
+                {{'COMMON.CUSTOM_ATTRIBUTES.CHOOSE' | translate}}
+            <% } %>
+            <% for (let opt of options) { if (value == opt) { %>
+            option(selected)
+                <%- opt %>
+            <% } else { %>
+            option
+                <%- opt %>
+            <% } } %>
         <% } else { %>
         input#custom-field-value(name="value", type="text", value!="<%- value %>")
         <% } %>
